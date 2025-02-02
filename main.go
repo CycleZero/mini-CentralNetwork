@@ -1,9 +1,22 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"./temp"
+)
 
 func main() {
-	var a int = 10
-	fmt.Println(a)
+	ch := make(chan string)
+	var d string
+
+	go temp.Testchan(ch)
+	for {
+		_, _ = fmt.Scan(&d)
+		ch <- d
+		if d == "0" {
+			break
+		}
+	}
 
 }

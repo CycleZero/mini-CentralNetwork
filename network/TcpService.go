@@ -1,9 +1,7 @@
 package network
 
 import (
-	"errors"
 	"fmt"
-	"io"
 	"net"
 	"sync"
 )
@@ -23,14 +21,14 @@ type TcpService struct {
 	OutChan chan string
 }
 
-func (this *TcpService) Init(addr string, port int) {
-	this.InChan = make(chan string)
-	this.OutChan = make(chan string)
+func (t *TcpService) Init(addr string, port int) {
+	t.InChan = make(chan string)
+	t.OutChan = make(chan string)
 }
-func (this *TcpService) Run(addr string, port int) {
-	this.host = addr
-	this.port = port
-	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", this.host, this.port))
+func (t *TcpService) Run(addr string, port int) {
+	t.host = addr
+	t.port = port
+	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", t.host, t.port))
 	if err != nil {
 		fmt.Println("listen error:", err)
 		panic(err)
@@ -41,32 +39,27 @@ func (this *TcpService) Run(addr string, port int) {
 		conn, err := listener.Accept()
 		if err != nil {
 			fmt.Println("accept error:", err)
-			panic(err)
+			break
 
 		}
 		wg.Add(1)
 		//conn传值
-		go func() {
-			defer wg.Done()
-			buf := make([]byte, 1024)
-			for {
-				n, err := conn.Read(buf)
-				if errors.Is(err, io.EOF) {
-					break
-
-				} else if err != nil {
-					fmt.Println("read error:", err)
-					panic(err)
-				}
-			}
-			msg := string(buf[:n])
-			fmt.Println("receive message:", msg)
-
-		}()
+		go t.StartReading(conn)
 
 	}
 	wg.Wait()
 }
 
+func (t *TcpService) StartReading(conn net.Conn) {
+	buf := make([]byte, 1024)
+	data := make([]byte, 1024)
+	for {
+		n, _ := conn.Read(buf)
+		if n > 0 {
+			data = append(data, buf[:n]...)
+		} else if len(data) > 0 {
+			//数据处理
+		}
 
-func (this *TcpService) 
+	}
+}
