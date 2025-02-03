@@ -4,27 +4,25 @@ import (
 	"fmt"
 	"net"
 	"sync"
+
+	constformat "../ConstFormat"
 )
 
-type NetworkData struct {
-	id     int
-	ToAddr string
-	ToPort int
-	data   string
-}
-
 type TcpService struct {
-	host    string
-	port    int
-	isInit  bool
-	InChan  chan string
-	OutChan chan string
+	host   string
+	port   int
+	isInit bool
+
+	OutChan chan constformat.NetCommandPackage
 }
 
 func (t *TcpService) Init(addr string, port int) {
-	t.InChan = make(chan string)
-	t.OutChan = make(chan string)
+	t.host = addr
+	t.port = port
+	t.OutChan = make(chan constformat.NetCommandPackage, 100)
+	t.isInit = true
 }
+
 func (t *TcpService) Run(addr string, port int) {
 	t.host = addr
 	t.port = port
@@ -50,7 +48,7 @@ func (t *TcpService) Run(addr string, port int) {
 	wg.Wait()
 }
 
-func (t *TcpService) StartReading(conn net.Conn, result chan string) {
+func (t *TcpService) Reader(conn net.Conn, result chan string) {
 	buf := make([]byte, 1024)
 	data := make([]byte, 1024)
 	for {
@@ -67,9 +65,36 @@ func (t *TcpService) StartReading(conn net.Conn, result chan string) {
 	}
 }
 
+func (t *TcpService) Sender(conn net.Conn, datach chan string) {
+	for {
+		data := <-datach
+		n, err := conn.Write([]byte(data))
+		if n != len(data) {
+			fmt.Println("send error: n < length")
+		}
+		if err != nil {
+			fmt.Println("send error:", err)
+			break
+		}
+	}
+}
+
 func (t *TcpService) hundleConnect(conn net.Conn) {
 	defer conn.Close()
 	readResult := make(chan string, 10)
-	go t.StartReading(conn, readResult)
+	sendchannel := make(chan string, 10)
+	go t.Reader(conn, readResult)
+	go t.Sender(conn, sendchannel)
+	// for {
+	// 	select {
+	// 	case data := <-readResult:
+	// 		fmt.Println("read:", data)
+
+	// 		t.OutChan <- data
+	// 	case data := <-t.OutChan:
+	// 		fmt.Println("send:", data)
+	// 		sendchannel <- data
+	// 	}
+	// }
 
 }

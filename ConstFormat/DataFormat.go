@@ -9,3 +9,10 @@ type NetCommandPackage struct {
 	Id            string
 	TargetService string
 }
+
+type UDPdata struct {
+	Data     []byte
+	FromAddr *net.UDPAddr
+	ToAddr   *net.UDPAddr
+	Id       string
+}

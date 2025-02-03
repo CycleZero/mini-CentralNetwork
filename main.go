@@ -1,22 +1,17 @@
 package main
 
 import (
-	"fmt"
-
-	"./temp"
+	"./network"
 )
 
 func main() {
-	ch := make(chan string)
-	var d string
+	udptest()
 
-	go temp.Testchan(ch)
-	for {
-		_, _ = fmt.Scan(&d)
-		ch <- d
-		if d == "0" {
-			break
-		}
-	}
+}
+
+func udptest() {
+	udpobj := network.UdpService{}
+	udpobj.Init("127.0.0.1", 45688)
+	udpobj.Run()
 
 }
