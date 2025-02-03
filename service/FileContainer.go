@@ -36,3 +36,7 @@ func (f *FileContainer) HundleCommand(commnad constformat.NetCommandPackage) {
 		return
 	}
 }
+
+func (f *FileContainer) Init() {
+
+}

@@ -16,3 +16,9 @@ type UDPdata struct {
 	ToAddr   *net.UDPAddr
 	Id       string
 }
+
+type ServiceData struct {
+	Data   []byte
+	ToAddr *net.UDPAddr
+	Id     string
+}

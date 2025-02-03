@@ -59,6 +59,17 @@ func (u *UdpService) Reader() {
 	}
 }
 
+func (u *UdpService) Sender(datach chan constformat.UDPdata) {
+	for {
+		data := <-datach
+		_, err := u.listener.WriteToUDP(data.Data, data.ToAddr)
+		if err != nil {
+			fmt.Println("send error:", err)
+			break
+		}
+	}
+}
+
 func (u *UdpService) GenerateUDPdata(data []byte, addr *net.UDPAddr) constformat.UDPdata {
 	return constformat.UDPdata{Data: data, FromAddr: addr, ToAddr: u.addr}
 }

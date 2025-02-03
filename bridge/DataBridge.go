@@ -6,7 +6,8 @@ import (
 )
 
 type DataBridge struct {
-	Filecontainer *service.FileContainer
+	Filecontainer    *service.FileContainer
+	Messagecontainer *service.MessageContainer
 }
 
 func (d *DataBridge) TransCommand(pkg constformat.NetCommandPackage) {
@@ -19,5 +20,16 @@ func (d *DataBridge) TransCommand(pkg constformat.NetCommandPackage) {
 
 func (d *DataBridge) Init() {
 	d.Filecontainer = new(service.FileContainer)
+	d.Filecontainer.Init()
+	d.Messagecontainer = new(service.MessageContainer)
+	d.Messagecontainer.Init()
+}
 
+func (d *DataBridge) Run() {
+	d.Messagecontainer.Run()
+
+	for {
+		select {}
+
+	}
 }
