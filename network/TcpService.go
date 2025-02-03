@@ -44,22 +44,32 @@ func (t *TcpService) Run(addr string, port int) {
 		}
 		wg.Add(1)
 		//conn传值
-		go t.StartReading(conn)
+		go t.hundleConnect(conn)
 
 	}
 	wg.Wait()
 }
 
-func (t *TcpService) StartReading(conn net.Conn) {
+func (t *TcpService) StartReading(conn net.Conn, result chan string) {
 	buf := make([]byte, 1024)
 	data := make([]byte, 1024)
 	for {
-		n, _ := conn.Read(buf)
+		n, err := conn.Read(buf)
 		if n > 0 {
 			data = append(data, buf[:n]...)
 		} else if len(data) > 0 {
-			//数据处理
+			result <- string(data)
+		} else if err != nil {
+			fmt.Println("read error:", err)
+			break
 		}
 
 	}
+}
+
+func (t *TcpService) hundleConnect(conn net.Conn) {
+	defer conn.Close()
+	readResult := make(chan string, 10)
+	go t.StartReading(conn, readResult)
+
 }
