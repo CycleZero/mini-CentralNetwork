@@ -29,9 +29,9 @@ command
 
 }
 */
-func (f *FileContainer) HundleCommand(commnad constformat.NetCommandPackage) {
+func (f *FileContainer) HundleCommand(command constformat.NetCommandPackage) {
 	comobj := FileCommand{}
-	err := json.Unmarshal([]byte(commnad.Command), &comobj)
+	err := json.Unmarshal([]byte(command.Commandpackage.Command), &comobj)
 	if err != nil {
 		return
 	}

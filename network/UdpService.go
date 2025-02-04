@@ -12,11 +12,13 @@ type UdpService struct {
 	isInit   bool
 	listener *net.UDPConn
 	OutChan  chan constformat.UDPdata
+	InChan   chan constformat.UDPdata
 }
 
 func (u *UdpService) Init(host string, port int) {
 	u.addr = &net.UDPAddr{IP: net.ParseIP(host), Port: port}
 	u.OutChan = make(chan constformat.UDPdata, 100)
+	u.InChan = make(chan constformat.UDPdata, 100)
 	u.isInit = true
 }
 
@@ -30,38 +32,31 @@ func (u *UdpService) Run() {
 		return
 	}
 	u.listener = listen
-	defer listen.Close()
-	for {
-		var data [1024]byte
-		n, addr, err := listen.ReadFromUDP(data[:]) // 接收数据
-		if err != nil {
-			fmt.Println("read udp failed, err: ", err)
-			continue
-		}
-		fmt.Printf("data:%v addr:%v count:%v\n", string(data[:n]), addr, n)
-		_, err = listen.WriteToUDP(data[:n], addr) // 发送数据
-		if err != nil {
-			fmt.Println("Write to udp failed, err: ", err)
-			continue
-		}
-	}
+	go u.Reader()
+	go u.Sender()
+	fmt.Println("UDP服务已启动,监听端口:", u.addr.Port)
 }
 
 func (u *UdpService) Reader() {
 	var data [10240]byte
+	var num int = 0
 	for {
 		n, addr, err := u.listener.ReadFromUDP(data[:])
 		if err != nil {
 			fmt.Println("read udp failed, err: ", err)
 			break
 		}
+		num++
+		fmt.Println("收到来自", addr, "的数据：", string(data[:n]), num)
 		u.OutChan <- u.GenerateUDPdata(data[:n], addr)
+		fmt.Println("数据已交由DataBridge处理")
 	}
 }
 
-func (u *UdpService) Sender(datach chan constformat.UDPdata) {
+func (u *UdpService) Sender() {
+	defer u.listener.Close()
 	for {
-		data := <-datach
+		data := <-u.InChan
 		_, err := u.listener.WriteToUDP(data.Data, data.ToAddr)
 		if err != nil {
 			fmt.Println("send error:", err)

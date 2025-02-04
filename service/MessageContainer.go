@@ -1,6 +1,10 @@
 package service
 
-import constformat "../ConstFormat"
+import (
+	"fmt"
+
+	constformat "../ConstFormat"
+)
 
 type MessageContainer struct {
 	OutChan chan constformat.ServiceData
@@ -12,23 +16,26 @@ func (m *MessageContainer) GetMessage() string {
 }
 
 func (m *MessageContainer) HundleCommand(pkg constformat.NetCommandPackage) {
-	switch {
-	case pkg.Command == "GetMessage":
-		m.OutChan <- constformat.ServiceData{Data: []byte(m.GetMessage())}
-	}
+
+	m.OutChan <- constformat.ServiceData{Data: []byte(m.GetMessage()), ToAddr: pkg.ToAddr, Id: pkg.Commandpackage.Id}
+	fmt.Println("MessageContainer 服务已处理", pkg.ToAddr)
 }
 
-func (m *MessageContainer) Init() {
+func (m *MessageContainer) Init(outchan chan constformat.ServiceData) {
 	m.InChan = make(chan constformat.NetCommandPackage, 100)
-	m.OutChan = make(chan constformat.ServiceData, 100)
+	m.OutChan = outchan
 }
 
 func (m *MessageContainer) Run() {
-	for {
-		select {
-		case pkg := <-m.InChan:
-			m.HundleCommand(pkg)
-		}
 
-	}
+	go func() {
+		for {
+			select {
+			case pkg := <-m.InChan:
+				m.HundleCommand(pkg)
+			}
+
+		}
+	}()
+	fmt.Println("MessageContainer 服务已启动")
 }
