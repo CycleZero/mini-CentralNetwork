@@ -23,7 +23,7 @@ func (u *UdpService) Init(host string, port int) {
 }
 
 func (u *UdpService) Run() {
-	if u.isInit == false {
+	if !u.isInit {
 		return
 	}
 	listen, err := net.ListenUDP("udp", u.addr)
@@ -39,15 +39,15 @@ func (u *UdpService) Run() {
 
 func (u *UdpService) Reader() {
 	var data [10240]byte
-	var num int = 0
+
 	for {
 		n, addr, err := u.listener.ReadFromUDP(data[:])
 		if err != nil {
 			fmt.Println("read udp failed, err: ", err)
 			break
 		}
-		num++
-		fmt.Println("收到来自", addr, "的数据：", string(data[:n]), num)
+
+		fmt.Println("收到来自", addr, "的数据：", string(data[:n]))
 		u.OutChan <- u.GenerateUDPdata(data[:n], addr)
 		fmt.Println("数据已交由DataBridge处理")
 	}

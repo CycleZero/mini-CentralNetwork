@@ -28,8 +28,9 @@ func run() {
 	databridge.UDPOutchan = udp.OutChan
 	udp.Run()
 	databridge.Run()
-	fmt.Println("所有服务已启动 ")
-	for {
 
-	}
+	httpservice := network.HttpServiceRun(45689)
+	fmt.Println("http服务已启动,监听地址:", httpservice.Server.Addr)
+	fmt.Println("所有服务已启动 ")
+	select {}
 }
