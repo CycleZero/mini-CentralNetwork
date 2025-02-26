@@ -6,7 +6,7 @@ import (
 	constformat "../ConstFormat"
 )
 
-type FileContainer struct {
+type FileService struct {
 	FilePath string
 	FileSize int64
 }
@@ -29,7 +29,7 @@ command
 
 }
 */
-func (f *FileContainer) HundleCommand(command constformat.NetCommandPackage) {
+func (f *FileService) HundleCommand(command constformat.NetCommandPackage) {
 	comobj := FileCommand{}
 	err := json.Unmarshal([]byte(command.Commandpackage.Command), &comobj)
 	if err != nil {
@@ -37,6 +37,6 @@ func (f *FileContainer) HundleCommand(command constformat.NetCommandPackage) {
 	}
 }
 
-func (f *FileContainer) Init() {
+func (f *FileService) Init() {
 
 }

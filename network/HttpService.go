@@ -29,6 +29,10 @@ func (h *HttpService) SetRoute(s *http.Server) {
 		w.Write([]byte("hello world"))
 
 	})
+	mux.HandleFunc("/file/list", func(w http.ResponseWriter, r *http.Request) {
+		//TODO:filelist
+
+	})
 
 	s.Handler = mux
 

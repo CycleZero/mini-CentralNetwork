@@ -10,7 +10,7 @@ import (
 )
 
 type DataBridge struct {
-	Filecontainer    *service.FileContainer
+	Filecontainer    *service.FileService
 	Messagecontainer *service.MessageContainer
 
 	ServiceOutchan chan constformat.ServiceData
@@ -32,7 +32,7 @@ func (d *DataBridge) TransCommand(pkg constformat.NetCommandPackage) {
 func (d *DataBridge) Init() {
 	d.ServiceOutchan = make(chan constformat.ServiceData, 100)
 
-	d.Filecontainer = new(service.FileContainer)
+	d.Filecontainer = new(service.FileService)
 	d.Filecontainer.Init()
 	d.Messagecontainer = new(service.MessageContainer)
 	d.Messagecontainer.Init(d.ServiceOutchan)
