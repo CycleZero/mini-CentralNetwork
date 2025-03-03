@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"os"
+	"time"
 
 	constformat "../ConstFormat"
 )
@@ -13,23 +14,24 @@ type FileService struct {
 }
 
 type FileCommand struct {
-	con      string // list download upload delete preview
-	filename string
-	filepath string
-	fileid   int
+	Con      string // list download upload delete preview
+	Filename string
+	Filepath string
+	FileId   int
 }
 
 type FileObject struct {
-	name  string
-	isDir bool
-	size  int
-	path  string
+	Name    string
+	IsDir   bool
+	Size    int64
+	Path    string
+	ModTime time.Time
 }
 
 type FileServiceResponse struct {
-	data any
-	id   int
-	code string
+	Data any
+	Id   int
+	Code string
 }
 
 /*
@@ -47,31 +49,31 @@ func (f *FileService) HundleCommand(command constformat.NetCommandPackage) FileS
 	comobj := FileCommand{}
 	err := json.Unmarshal([]byte(command.Commandpackage.Command), &comobj)
 	if err != nil {
-		return FileServiceResponse{code: "json parse error", data: ""}
+		return FileServiceResponse{Code: "json parse error", Data: ""}
 	}
 	response := FileServiceResponse{}
-	switch comobj.con {
+	switch comobj.Con {
 	case "delete":
-		_, err := f.DeleteFile(comobj.filepath, comobj.filename)
+		_, err := f.DeleteFile(comobj.Filepath, comobj.Filename)
 		if err != nil {
 			// return FileServiceResponse{code: "delete file error", data: ""}
-			response.code = "delete file error"
-			response.data = err.Error()
+			response.Code = "delete file error"
+			response.Data = err.Error()
 			return response
 		}
 		// return FileServiceResponse{code: "delete file success", data: comobj.filepath + "," + comobj.filename}
-		response.code = "delete file success"
-		response.data = comobj.filepath + "," + comobj.filename
+		response.Code = "delete file success"
+		response.Data = comobj.Filepath + "," + comobj.Filename
 	case "list":
-		filelist := ListFilesAndDirs(comobj.filepath)
+		filelist := ListFilesAndDirs(comobj.Filepath)
 		// return FileServiceResponse{code: "list file success", data: filelist}
-		response.code = "list file success"
-		response.data = filelist
+		response.Code = "list file success"
+		response.Data = filelist
 		// 处理 list 命令
 	case "download":
 		// 处理 download 命令
 		// return FileServiceResponse{code: "download file success", data: ""}
-		response.code = "download file success"
+		response.Code = "download file success"
 		// response.data = ""
 	case "upload":
 		// 处理 upload 命令
@@ -82,14 +84,14 @@ func (f *FileService) HundleCommand(command constformat.NetCommandPackage) FileS
 	default:
 		// 处理未知命令
 		// return FileServiceResponse{code: "unknown command", data: ""}
-		response.code = "unknown command"
-		response.data = ""
+		response.Code = "unknown command"
+		response.Data = ""
 	}
 	return response
 
 }
 
-func (f *FileService) New(basePath string) *FileService {
+func NewFileService(basePath string) *FileService {
 	return &FileService{BasePath: basePath}
 }
 
@@ -98,7 +100,7 @@ func ListFilesAndDirs(path string) []FileObject {
 		drives := ListDiskDrives()
 		filelist := []FileObject{}
 		for _, drive := range drives {
-			filelist = append(filelist, FileObject{name: drive, isDir: true, path: drive})
+			filelist = append(filelist, FileObject{Name: drive, IsDir: true, Path: drive})
 		}
 		return filelist
 	}
@@ -109,11 +111,16 @@ func ListFilesAndDirs(path string) []FileObject {
 	}
 	filelist := []FileObject{}
 	for _, entry := range entries {
-		fileobj := FileObject{name: entry.Name(), path: path + "/" + entry.Name()}
+		fileobj := FileObject{Name: entry.Name(), Path: path + "/" + entry.Name()}
+		fileInfo, _ := entry.Info()
+		if fileInfo != nil {
+			fileobj.Size = fileInfo.Size()
+			fileobj.ModTime = fileInfo.ModTime()
+		}
 		if entry.IsDir() {
-			fileobj.isDir = true
+			fileobj.IsDir = true
 		} else {
-			fileobj.isDir = false
+			fileobj.IsDir = false
 		}
 		filelist = append(filelist, fileobj)
 	}

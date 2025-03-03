@@ -1,14 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"./bridge"
 	"./network"
+	"./service"
 )
 
 func main() {
-	run()
+	fileTest()
 
 }
 
@@ -33,4 +35,13 @@ func run() {
 	fmt.Println("http服务已启动,监听地址:", httpservice.Server.Addr)
 	fmt.Println("所有服务已启动 ")
 	select {}
+}
+
+func fileTest() {
+	// fileservice := service.NewFileService("D:")
+	s := service.ListFilesAndDirs(".")
+	// obj := service.FileServiceResponse{Data: s, Id: 1111, Code: "test"}
+	j, _ := json.Marshal(s)
+	fmt.Println(string(j))
+
 }
