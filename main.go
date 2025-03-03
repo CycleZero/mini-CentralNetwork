@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	fileTest()
+	httpTest()
 
 }
 
@@ -44,4 +44,11 @@ func fileTest() {
 	j, _ := json.Marshal(s)
 	fmt.Println(string(j))
 
+}
+
+func httpTest() {
+	httpservice := network.HttpServiceRun(45689)
+	fmt.Println("http服务已启动,监听地址:", httpservice.Server.Addr)
+	fmt.Println("所有服务已启动 ")
+	select {}
 }
