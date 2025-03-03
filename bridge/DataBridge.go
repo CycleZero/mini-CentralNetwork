@@ -33,7 +33,7 @@ func (d *DataBridge) Init() {
 	d.ServiceOutchan = make(chan constformat.ServiceData, 100)
 
 	d.Filecontainer = new(service.FileService)
-	d.Filecontainer.Init()
+	// d.Filecontainer.Init()
 	d.Messagecontainer = new(service.MessageContainer)
 	d.Messagecontainer.Init(d.ServiceOutchan)
 
